@@ -8,9 +8,11 @@ except Exception as e :
 
 hashPassList = []
 hashWordsDictionary = {}
+
 tSources = (
 	("",""),
 	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10k-most-common.txt"),
+	("url", "https://raw.githubusercontent.com/hackingyseguridad/diccionarios/master/diccionario.txt"),
 	("file", "wordlist.txt")
 )
 
@@ -21,6 +23,7 @@ check_url = lambda url : requests.get(url).status_code == 200
 def textToMd5Hash(text) :
 	return hashlib.md5(text.strip().encode("utf-8")).hexdigest()
 
+#Definimos la función que obtiene todas las palabras de un archivo obtenido atraves de una url
 def getUrlWords(url):
 	try :
 		if check_url(url) :
@@ -34,9 +37,10 @@ def getUrlWords(url):
 	except Exception as e :
 		print("[!] Error : " + str(e))
 
+#Definimos la función que obtiene todas las palabras de un archivo obtenido atraves de un path
 def getFileWords(path):
 	try :
-		fileWords = open(path);
+		fileWords = open(path)
 		for word in fileWords :
 			word = word.replace("\n", "")
 			hashWordsDictionary[textToMd5Hash(word)] = word
@@ -45,11 +49,11 @@ def getFileWords(path):
 	except Exception as e :
 		print("[!] Error : " + str(e))
 
-passFile = open("PASSWORDS.md");
-for hashPass in passFile:
+hashPassFile = open("PASSWORDS.md");
+for hashPass in hashPassFile:
 	hashPassList.append(hashPass.replace("\n", ""))
 
-passFile.close()
+hashPassFile.close()
 
 for source in tSources:
 	if source[0] == "url":
@@ -61,13 +65,37 @@ print("[i] Hash to check: {}".format(len(hashPassList)))
 print("[i] Hash dictionary: {}".format(len(hashWordsDictionary)))
 print("")
 
+
+clearPassFile = open("clearPassFile.txt", "w")
+saltPassFile = open("saltPassFile.txt", "w")
+
 i = 0
+saltVariable = 0
+saltFijo = "1salt2Hash3"
+
 for hashPass in hashPassList:
+	saltVariable += 1
 	if hashPass in hashWordsDictionary:
-		print(hashPass + ": " + hashWordsDictionary.get(hashPass))
-		i += 1
-	# else:
-	# 	print("")
+		clearPassword = hashWordsDictionary.get(hashPass)
+		print(hashPass + ": " + clearPassword)
 		
+		if saltVariable%2 == 0:
+			saltClearPassword = "{}".format(saltVariable) + saltFijo + clearPassword
+		else:
+			saltClearPassword = saltFijo + "{}".format(saltVariable) + clearPassword
+		
+		saltPassword = textToMd5Hash(saltClearPassword)
+
+		clearPassFile.write(clearPassword + "\n")
+		saltPassFile.write(saltPassword + "\n")
+		i += 1
+	else:
+		clearPassFile.write("\n")
+		saltPassFile.write("\n")
+	
+
+clearPassFile.close()
+saltPassFile.close()
+
 print("")	
 print("[+] {} hashes have been decrypted".format(i))
