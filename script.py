@@ -11,17 +11,31 @@ hashWordsDictionary = {}
 
 tSources = (
 	("",""),
+	("file", "wordlist.txt"),
 	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10k-most-common.txt"),
 	("url", "https://raw.githubusercontent.com/hackingyseguridad/diccionarios/master/diccionario.txt"),
-	("file", "wordlist.txt")
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Most-Popular-Letter-Passes.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/UserPassCombo-Jay.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/bt4-password.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/cirt-default-passwords.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/clarkson-university-82.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/darkweb2017-top10000.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/days.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/months.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/seasons.txt"),
+	("url", "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/xato-net-10-million-passwords.txt"),
 )
 
 #Definimos la función lamba que compruaba si la url es valida
 check_url = lambda url : requests.get(url).status_code == 200
 
-#Definimos la función que obtiene el hash md5 de un 	texto pasado como parametro
-def textToMd5Hash(text) :
+#Definimos la función que obtiene el hash md5 de un texto pasado como parametro
+def textToMd5Hash(text):
 	return hashlib.md5(text.strip().encode("utf-8")).hexdigest()
+
+#Definimos la función que obtiene el hash sha256 de un texto pasado como parametro
+def textToSha256(text):
+	return hashlib.sha256(text.strip().encode("utf-8")).hexdigest()
 
 #Definimos la función que obtiene todas las palabras de un archivo obtenido atraves de una url
 def getUrlWords(url):
@@ -61,10 +75,10 @@ for source in tSources:
 	if source[0] == "file":
 		getFileWords(source[1])
 	
+	
 print("[i] Hash to check: {}".format(len(hashPassList)))
 print("[i] Hash dictionary: {}".format(len(hashWordsDictionary)))
 print("")
-
 
 clearPassFile = open("clearPassFile.txt", "w")
 saltPassFile = open("saltPassFile.txt", "w")
@@ -84,7 +98,7 @@ for hashPass in hashPassList:
 		else:
 			saltClearPassword = saltFijo + "{}".format(saltVariable) + clearPassword
 		
-		saltPassword = textToMd5Hash(saltClearPassword)
+		saltPassword = textToSha256(saltClearPassword)
 
 		clearPassFile.write(clearPassword + "\n")
 		saltPassFile.write(saltPassword + "\n")
